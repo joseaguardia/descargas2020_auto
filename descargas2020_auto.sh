@@ -177,6 +177,34 @@ do
 done
 
 
+#######################################
+# COMPROBAMOS TEMPORADAS NUEVAS (S*E01)
+#######################################
+
+
+#Saca las nuevas series que han subido (capitulo 1 de cualquier temporada), y envia notificación por si se nos ha pasado una de las nuestras
+echo "Comprobando si hay alguna temporada nueva de cualquier serie..."
+
+cat /tmp/descargas2020.feed | sed -n 's:.*<link>\(.*\)</link>.*:\1:p' | sed "/$(cat $RUTA/ultimo.feed)/Q" | grep serie-en-hd | grep descargar | grep capitulo-01 | cut -d '/' -f6,7,8 | while read TEMPORADANUEVA
+do
+    SERIE="$(cut -d '/' -f1 <<< $TEMPORADANUEVA)"
+    TEMPORADA="$(cut -d '/' -f2 <<< $TEMPORADANUEVA | cut -d '-' -f2- )"
+    CAPITULO="$(cut -d '/' -f3 <<< $TEMPORADANUEVA | cut -d '-' -f2- )"
+
+    echo "Encontrada temporada $TEMPORADA, capitulo $CAPITULO de $SERIE"
+
+    #Si la temporada es la 1, ya ha actuado la función anterior, así que saltamos
+    if ! [ $TEMPORADA = 1 ]; then
+
+        curl -s -X POST https://api.telegram.org/${TELEGRAMAPIKEY}/sendMessage -F chat_id=$TELEGRAMCHANNEL -F text="📺 Nueva temporada (*$TEMPORADA*) de *$(tr '-' ' ' <<< $SERIE | tr '[:lower:]' '[:upper:]' )*" -F parse_mode=markdown
+    
+    fi
+
+done
+
+
+
+
 
 
 

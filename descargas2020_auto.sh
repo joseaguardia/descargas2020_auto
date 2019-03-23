@@ -250,5 +250,40 @@ done
 
 
 
-#Guardamos la primera entrada, para cortar ahí la próxima vez, escapando las barras para el siguiente sed
+#######################################
+# ESTRENOS DE NETFLIX
+#######################################
+
+#Saca un listado de estrenos de Netflix, que tengan más de un 8.0 e IMDB ordenado por fecha de publicación
+
+#Puntuación mínimo de IMDB
+IMDBRATING=8.0
+
+echo "Comprobando estrenos de Netflix"
+
+#Comprobamos la herramienta recode, necesaria para pasar de HTML a ASCII el resultado de Netflix
+if hash recode 2>/dev/null; then
+    curl -s "https://reelgood.com/source/netflix?filter-imdb_start=$IMDBRATING&filter-sort=3" | sed 's/>/>\n/g' | grep '<td class="cd">' -A2 --no-group-separator | grep -v '<a href="'  | grep -v '<td class="cd">' | cut -d '<' -f1 | recode html..ascii | sed "/$(cat $RUTA/ultimo.netflix)/Q" | while read NETFLIX
+    do
+
+        if ! [ -z $NETFLIX ]; then    
+            IMDBID="$(curl -s https://www.imdb.com/find?q="$(tr ' ' '+' <<< $NETFLIX | tr -d '&' | tr -d ':')"\&s=tt | grep -o '/title/tt[0-9]*/?ref_=fn_tt_tt_1' | head -1)"
+            PUNTUACION="$(curl -s https://www.imdb.com/$IMDBID | grep -o 'title="[0-9]*.[0-9]* based' | sed 's/title="//g' | cut -d' ' -f1 | tr '.' ',')"
+            echo "$NETFLIX - $PUNTUACION"
+
+            
+            curl -s -X POST https://api.telegram.org/${TELEGRAMAPIKEY}/sendMessage -F chat_id=$TELEGRAMCHANNEL -F text="📣 Nuevo en NETFLIX: [$(tr '-' ' ' <<< $NETFLIX | tr '[:lower:]' '[:upper:]' )](https://www.imdb.com$IMDBID) - ${PUNTUACION}⭐" -F parse_mode=markdown
+        fi
+    done
+
+    #Guardamo la primera entrada de Netflix para cortar ahí la próxima vez, escapando las barras para el siguiente sed
+    curl -s "https://reelgood.com/source/netflix?filter-imdb_start=$IMDBRATING&filter-sort=3" | sed 's/>/>\n/g' | grep '<td class="cd">' -A2 --no-group-separator | grep -v '<a href="'  | grep -v '<td class="cd">' | head -1 | cut -d '<' -f1 | sed 's/\//\\\//g' | recode html..ascii > $RUTA/ultimo.netflix
+
+else
+    echo "Herremienta recode no encontrada, saltamos la verificación de Netflix"
+fi
+
+
+
+#Guardamo la primera entrada de descargas2020.com para cortar ahí la próxima vez, escapando las barras para el siguiente sed
 cat /tmp/descargas2020.feed | sed -n 's:.*<link>\(.*\)</link>.*:\1:p' | grep descargar | head -n 1 | sed 's/\//\\\//g' > $RUTA/ultimo.feed

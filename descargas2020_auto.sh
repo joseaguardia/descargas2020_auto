@@ -28,7 +28,7 @@ fi
 
 
 #Descargamos el feed completo actual para trabajar offline o avisamos por telegram si hay error
-curl https://descargas2020.com/feed --silent > /tmp/descargas2020.feed || curl -s -X POST https://api.telegram.org/${TELEGRAMAPIKEY}/sendMessage -F chat_id=$TELEGRAMCHANNEL -F text="⚠️  Error al descargar el feed de descargas2020.com/feed"
+curl https://pctnew.com/feed --silent > /tmp/descargas2020.feed || curl -s -X POST https://api.telegram.org/${TELEGRAMAPIKEY}/sendMessage -F chat_id=$TELEGRAMCHANNEL -F text="⚠️  Error al descargar el feed de pctnew.com/feed"
 
 
 
@@ -81,13 +81,13 @@ do
 
      
             #Entramos en la página de la descarga del capítulo y obtenemos el nombre del torrent, quitando espacios y texto que sobra
-            TORRENT=$(curl --silent --max-time 10 -L "https://descargas2020.com/descargar/serie-en-hd/$SERIE/temporada-$TEMPORADA/capitulo-$CAPITULO/#" | grep 'descargas2020.com/descargar-torrent' |  sed -e 's/^\s*//' -e '/^$/d' | cut -d'/' -f5 | sed 's/\/";//g' | tr -d [:space:])
-            TORRENT_URL="https://descargas2020.com/descargar-torrent/${TORRENT}/${TORRENT}.torrent"
+            TORRENT=$(curl --silent --max-time 10 -L "https://pctnew.com/descargar/serie-en-hd/$SERIE/temporada-$TEMPORADA/capitulo-$CAPITULO/#" | grep 'pctnew.com/descargar-torrent' |  sed -e 's/^\s*//' -e '/^$/d' | cut -d'/' -f5 | sed 's/\/";//g' | tr -d [:space:])
+            TORRENT_URL="https://pctnew.com/descargar-torrent/${TORRENT}/${TORRENT}.torrent"
 
 
             #Si la variable TORRENT está a null (el enlace no se ha encontrado)
             if [ -z $TORRENT ]; then
-                echo "Archivo no disponible o error: https://descargas2020.com/descargar/serie-en-hd/$SERIE/temporada-$TEMPORADA/capitulo-$CAPITULO/#"
+                echo "Archivo no disponible o error: https://pctnew.com/descargar/serie-en-hd/$SERIE/temporada-$TEMPORADA/capitulo-$CAPITULO/#"
                 continue
             fi
 
@@ -101,7 +101,7 @@ do
 
             #Descargamos
             cd $RUTA/torrents/ 
-            wget --timeout=15 --header='Host: descargas2020.com' --header='User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36' --header='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8' --header='Accept-Language: es-ES,es;q=0.9,en;q=0.8' --header="Referer: https://descargas2020.com/descargar/serie-en-hd/$SERIE/temporada-$TEMPORADA/capitulo-$CAPITULO/" --header='Cookie: __PPU_SESSION_1_1549501_false=1550004812922|3|1550082642633|3|1; PHPSESSID=6f4f9jfd0du579e7vbin6iibe1' --header='Connection: keep-alive' $TORRENT_URL -c
+            wget --timeout=15 --header='Host: pctnew.com' --header='User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36' --header='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8' --header='Accept-Language: es-ES,es;q=0.9,en;q=0.8' --header="Referer: https://pctnew.com/descargar/serie-en-hd/$SERIE/temporada-$TEMPORADA/capitulo-$CAPITULO/" --header='Cookie: __PPU_SESSION_1_1549501_false=1550004812922|3|1550082642633|3|1; PHPSESSID=6f4f9jfd0du579e7vbin6iibe1' --header='Connection: keep-alive' $TORRENT_URL -c
 
             #Copiamos a 'autodescargas' del servidor del salón
             if /usr/bin/smbclient //192.168.1.112/autodescarga -U user%password -c "put ${TORRENT}.torrent"; then
@@ -227,8 +227,8 @@ do
     if [[ $( cut -d ',' -f1 <<< $PUNTUACION ) -ge 7 ]]; then
 
         #Entramos en la página de la descarga del capítulo y obtenemos el nombre del torrent, quitando espacios y texto que sobra
-        TORRENT=$(curl --silent --max-time 10 -L "https://descargas2020.com/descargar/cine-alta-definicion-hd/$PELICULA/bluray-microhd/#" | grep 'descargas2020.com/descargar-torrent' |  sed -e 's/^\s*//' -e '/^$/d' | cut -d'/' -f5 | sed 's/\/";//g' | tr -d [:space:])
-        TORRENT_URL="https://descargas2020.com/descargar-torrent/${TORRENT}/${TORRENT}.torrent"
+        TORRENT=$(curl --silent --max-time 10 -L "https://pctnew.com/descargar/cine-alta-definicion-hd/$PELICULA/bluray-microhd/#" | grep 'pctnew.com/descargar-torrent' |  sed -e 's/^\s*//' -e '/^$/d' | cut -d'/' -f5 | sed 's/\/";//g' | tr -d [:space:])
+        TORRENT_URL="https://pctnew.com/descargar-torrent/${TORRENT}/${TORRENT}.torrent"
 
         RESUMEN=`curl -s https://www.imdb.com/$(curl -s https://www.imdb.com/find?q="$(tr '-' '+' <<< $PELICULA)"\&s=tt | grep -o '/title/tt[0-9]*/?ref_=fn_tt_tt_1' | head -1) | grep -A1 'summary_text' | tail -n 1 | sed -e 's/^[ \t]*//' `
 
@@ -285,5 +285,5 @@ fi
 
 
 
-#Guardamo la primera entrada de descargas2020.com para cortar ahí la próxima vez, escapando las barras para el siguiente sed
+#Guardamo la primera entrada de pctnew.com para cortar ahí la próxima vez, escapando las barras para el siguiente sed
 cat /tmp/descargas2020.feed | sed -n 's:.*<link>\(.*\)</link>.*:\1:p' | grep descargar | head -n 1 | sed 's/\//\\\//g' > $RUTA/ultimo.feed
